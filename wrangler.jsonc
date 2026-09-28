@@ -1,0 +1,22 @@
+{
+  // Must match the Worker name in Cloudflare so pushes update the same site.
+  "name": "releaselystudio",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+
+  // The website itself lives in /public.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  // Usage counter database.
+  // Paste your D1 database ID between the quotes below.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "releasely",
+      "database_id": "PASTE-YOUR-DATABASE-ID-HERE"
+    }
+  ]
+}

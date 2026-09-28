@@ -22,20 +22,33 @@ Needs a desktop browser with WebCodecs: Chrome or Edge recommended. Phones and S
 
 ## Project structure
 
-The whole app is one file: `index.html`. It loads three small libraries from public CDNs:
+```
+public/            the website (served as static files)
+  index.html       the whole app
+  favicon.svg/.ico, apple-touch-icon.png, og.png, robots.txt
+src/worker.js      tiny API for the usage counter (/api/count, /api/stats)
+wrangler.jsonc     Cloudflare config: Worker name, site folder, D1 database
+```
 
-- `webm-muxer` and `mp4-muxer` (jsDelivr): package the encoded video and audio into a file
-- `JSZip` (cdnjs): bundles the teaser clips into one download
+The app loads three small libraries from public CDNs: `webm-muxer` and `mp4-muxer` (jsDelivr) to package video files, and `JSZip` (cdnjs) to bundle teaser clips.
+
+## Usage counter
+
+When someone finishes an album video or a teaser pack, the page sends a single "+1" to `/api/count`. No songs, names or personal info are sent. Totals live in a Cloudflare D1 database called `releasely` and can be checked at `/api/stats`. The site shows the totals under the headline once they pass 10.
+
+## Analytics
+
+Cloudflare Web Analytics: paste the site token into `CF_ANALYTICS_TOKEN` in `public/index.html`.
 
 ## Setting up donations
 
-Open `index.html`, search for `DONATE_CONFIG`, and paste links or wallet addresses between the empty quotes. Anything left empty stays hidden, and the whole section is hidden until at least one option is filled in.
+Open `public/index.html`, search for `DONATE_CONFIG`, and paste links or wallet addresses between the empty quotes. Anything left empty stays hidden, and the whole section is hidden until at least one option is filled in.
 
 ## Deploying
 
-Hosted on Cloudflare Pages, connected to this repo. Every push to `main` redeploys the site automatically.
+Hosted as a Cloudflare Worker (static assets + a small API), connected to this repo. Every push to `main` redeploys automatically.
 
-Build settings: no framework, no build command, output directory is the repo root.
+Build settings: no build command; deploy command `npx wrangler deploy`.
 
 ## Updating the site
 

@@ -4,6 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Releasely Studio · Album to YouTube video</title>
+<meta name="description" content="Free tool for independent artists: turn your album's MP3s into one full-album YouTube video with fades, matched volume and chapter timestamps, plus a TikTok teaser for every song.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#2B45D6">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Releasely Studio">
+<meta property="og:title" content="Releasely Studio: your album, ready for YouTube and TikTok">
+<meta property="og:description" content="Free for independent artists. MP3s in, full-album YouTube video + a TikTok teaser for every song out. Runs in your browser.">
+<meta property="og:url" content="https://releaselystudio.releasely.workers.dev/">
+<meta property="og:image" content="https://releaselystudio.releasely.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Releasely Studio: your album, ready for YouTube and TikTok">
+<meta name="twitter:description" content="Free for independent artists. MP3s in, full-album YouTube video + a TikTok teaser for every song out.">
+<meta name="twitter:image" content="https://releaselystudio.releasely.workers.dev/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
@@ -149,6 +166,14 @@ textarea{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.
 .clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:16px}
 .clip{font-size:.8rem;color:var(--muted)}
 .clip video{width:100%;aspect-ratio:9/16;background:#000;border-radius:8px;display:block;margin-bottom:4px}
+.onphone{display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;border-color:var(--cobalt)}
+.onphone-icon{font-size:1.8rem;line-height:1}
+.onphone b{display:block;font-family:var(--display);font-size:1.15rem;margin-bottom:2px}
+.onphone p{margin:0 0 4px;color:var(--muted)}
+.onphone .btnrow{margin-bottom:0}
+.onphone a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.stats{font-size:.9rem;color:var(--muted);margin:.5rem 0 0;font-variant-numeric:tabular-nums}
+.stats b{color:var(--ink)}
 .check{display:flex;gap:10px;align-items:flex-start;margin:2px 0 16px;cursor:pointer}
 .check input{width:20px;height:20px;margin-top:2px;accent-color:var(--cobalt);flex:none}
 .check b{display:block;font-size:.95rem}
@@ -175,11 +200,21 @@ textarea{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.
     <div>
       <h1>Album to YouTube</h1>
       <p class="lede">Drop in your MP3s, set the order and song names, and get one full-album video with smooth fades and chapter timestamps ready to paste.</p>
+      <p id="stats" class="stats hidden"></p>
     </div>
   </header>
 
-  <div id="unsupported" class="card msg err hidden" style="margin-bottom:20px">
-    This browser can't encode video. Open this page in Chrome or Edge on a computer.
+  <div id="unsupported" class="card onphone hidden" role="note">
+    <div class="onphone-icon" aria-hidden="true">💻</div>
+    <div class="onphone-body">
+      <b id="unsupTitle">Open Releasely on your computer</b>
+      <p id="unsupText">Releasely builds your videos right on your device, and that needs Chrome or Edge on a laptop or desktop. Send yourself the link and pick up there.</p>
+      <div class="btnrow">
+        <button id="copyLink" class="btn small" type="button">Copy link</button>
+        <a id="emailLink" class="btn ghost small" href="#">Email it to me</a>
+        <button id="shareLink" class="btn ghost small hidden" type="button">Share…</button>
+      </div>
+    </div>
   </div>
 
   <div class="grid">
@@ -294,11 +329,11 @@ textarea{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.
 <script>
 window.DONATE_CONFIG = {
   message: "This tool is free, and your songs never leave your computer. If it saved you time on your release, chip in to keep it running.",
-   links: [
+  links: [
     { label: "Cash App",        url: "https://cash.app/$SaugaSen" },
-    { label: "PayPal",          url: "" },
+    { label: "PayPal",          url: "" },  // e.g. https://paypal.me/YourName
     { label: "Buy Me a Coffee", url: "https://buymeacoffee.com/HoodChess" },
-    { label: "Donate by card",  url: "" }
+    { label: "Donate by card",  url: "" }   // e.g. a Stripe Payment Link: https://buy.stripe.com/...
   ],
   crypto: [
     { label: "Solana (SOL or USDC)", address: "696ibnwTW3xTCSs1PVo5U8BRT92DbyZH6XbTeNW1Zjod" },
@@ -306,6 +341,20 @@ window.DONATE_CONFIG = {
     { label: "Bitcoin",              address: "bc1qvprf0pqmksfq7wrtq7ldwn9dyunlzwcyew79fy" }
   ]
 };
+</script>
+
+<!-- ============================================================
+     CLOUDFLARE WEB ANALYTICS: paste your token between the quotes.
+     (Cloudflare dashboard → Analytics → Web analytics → Add a site)
+     ============================================================ -->
+<script>
+window.CF_ANALYTICS_TOKEN = "";
+if (window.CF_ANALYTICS_TOKEN && /^https?:$/.test(location.protocol)){
+  const s = document.createElement("script");
+  s.defer = true; s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  s.setAttribute("data-cf-beacon", JSON.stringify({token: window.CF_ANALYTICS_TOKEN}));
+  document.head.appendChild(s);
+}
 </script>
 
 <script>
@@ -325,7 +374,24 @@ let output = null;             // {blob, filename}
 let previewCtx = null;
 
 const supported = typeof VideoEncoder !== "undefined" && typeof AudioEncoder !== "undefined" && typeof AudioData !== "undefined";
-if (!supported) $("unsupported").classList.remove("hidden");
+const isPhone = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 820);
+if (!supported || isPhone){
+  $("unsupported").classList.remove("hidden");
+  if (!isPhone){
+    $("unsupTitle").textContent = "Switch to Chrome or Edge";
+    $("unsupText").textContent = "This browser can't build video yet. Open this page in Chrome or Edge on your computer and everything will work.";
+  }
+}
+{
+  const url = location.origin + location.pathname;
+  $("emailLink").href = "mailto:?subject=" + encodeURIComponent("Releasely Studio: open on my computer") + "&body=" + encodeURIComponent("Open this in Chrome on my computer: " + url);
+  $("copyLink").onclick = async () => {
+    try { await navigator.clipboard.writeText(url); }
+    catch { const t=document.createElement("textarea"); t.value=url; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    $("copyLink").textContent = "Copied"; setTimeout(() => $("copyLink").textContent = "Copy link", 1500);
+  };
+  if (navigator.share){ $("shareLink").classList.remove("hidden"); $("shareLink").onclick = () => navigator.share({title:"Releasely Studio", url}).catch(()=>{}); }
+}
 
 /* ---------- helpers ---------- */
 function cleanName(filename){
@@ -1023,6 +1089,7 @@ async function renderVideo(){
     $("result").classList.remove("hidden");
     $("barFill").style.width = "100%";
     setMsg(`Done in ${fmtTime((performance.now()-t0wall)/1000)}. Download it below.`, "ok");
+    countEvent("album");
     $("result").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
   } catch(err){
     if (err && err.message === "cancelled") setMsg("Stopped. Nothing was saved.");
@@ -1188,6 +1255,7 @@ async function makeTeasers(){
     $("tzInfo").textContent = `${clips.length} clips, ${fmtBytes(total)}`;
     $("tzResult").classList.remove("hidden");
     $("tzMsg").textContent = "Your teaser clips are ready."; $("tzMsg").className = "msg ok";
+    countEvent("teasers");
   } catch(err){
     console.error(err);
     $("tzMsg").textContent = "The clips couldn't be finished: " + (err?.message || err) + ". Try the other file type.";
@@ -1209,6 +1277,26 @@ $("tzDownload").onclick = async () => {
     await saveFile(`${safeFile($("album").value.trim() || "Album")} teasers.zip`, blob);
   } finally { btn.disabled = false; btn.textContent = "Download all clips (.zip)"; }
 };
+
+/* ---------- usage counter (a +1 only; no songs or personal info) ---------- */
+function countEvent(name){
+  try {
+    if (!/^https?:$/.test(location.protocol)) return;
+    fetch("/api/count", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({event:name}), keepalive:true}).catch(()=>{});
+  } catch {}
+}
+async function showStats(){
+  try {
+    if (!/^https?:$/.test(location.protocol)) return;
+    const r = await fetch("/api/stats"); if (!r.ok) return;
+    const d = await r.json(); const a = d.album|0, t = d.teasers|0;
+    if (a + t < 10) return;  // show once there's something worth bragging about
+    const fmt = n => n.toLocaleString();
+    $("stats").innerHTML = `<b>${fmt(a)}</b> album video${a===1?"":"s"} and <b>${fmt(t)}</b> teaser pack${t===1?"":"s"} made on Releasely`;
+    $("stats").classList.remove("hidden");
+  } catch {}
+}
+showStats();
 
 /* ---------- saving ---------- */
 async function saveFile(filename, data){
