@@ -11,12 +11,11 @@
   },
 
   // Usage counter database.
-  // Paste your D1 database ID between the quotes below.
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "releasely",
-      "database_id": "PASTE-YOUR-DATABASE-ID-HERE"
+      "database_id": "4ea1716e-109e-4958-81fd-88463b0a1b40"
     }
   ]
 }
