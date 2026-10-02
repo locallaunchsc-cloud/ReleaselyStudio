@@ -220,6 +220,23 @@ textarea{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.
 .fm-btn:hover{background:#FFE531}
 .fm-price{align-self:center;font-weight:600}
 .founding .note{color:#C3C9F5}
+/* growth: social proof, share, pro preview */
+.proof{font-size:.92rem;color:var(--muted);margin:10px 0 0;text-align:center}
+.proof b{color:var(--ink)}
+.sharebox{margin-top:18px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.03)}
+.sharebox h3{margin:0 0 4px;font-size:1.05rem}
+.sharebox p{margin:0 0 6px;color:var(--muted);font-size:.92rem}
+.propreview{margin-top:18px;display:grid;grid-template-columns:minmax(0,220px) 1fr;gap:20px;align-items:center;padding:18px;border-radius:var(--r-md);background:linear-gradient(135deg,rgba(43,69,214,.35),rgba(200,40,140,.22));border:1px solid rgba(245,217,10,.35)}
+.propreview canvas{width:100%;aspect-ratio:1;border-radius:var(--r-md);background:#0d1030;display:block}
+.propreview h3{margin:0 0 6px;font-size:1.15rem}
+.propreview p{margin:0 0 8px;color:#D7DCFF;font-size:.95rem}
+.propreview .drop-date{color:var(--signal);font-weight:600}
+@media (max-width:640px){.propreview{grid-template-columns:1fr}}
+.fm-anchor{margin:0 0 16px;padding:12px 16px;border-radius:var(--r-md);background:rgba(0,0,0,.22);color:#EEF0FF;font-size:.95rem}
+.fm-anchor s{color:#9AA2D8}
+.fm-anchor b{color:var(--signal)}
+.fm-proof{margin:10px 0 0;color:#D7DCFF;font-size:.92rem}
+.fm-proof b{color:#fff}
 
 /* donations: quiet */
 .support{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;align-items:start;background:transparent}
@@ -337,6 +354,7 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
         <label class="f"><span>Artist</span><input id="artist" type="text" placeholder="Artist name" autocomplete="off"></label>
         <label class="f"><span>Album title</span><input id="album" type="text" placeholder="Album title" autocomplete="off"></label>
       </div>
+      <label class="f"><span>Release date <small style="font-weight:400;color:var(--muted)">(optional)</small></span><input id="relDate" type="date" autocomplete="off"></label>
       <label class="f"><span>Cover art</span>
         <div class="coverpick">
           <button id="coverBtn" class="btn ghost small" type="button">Choose image</button>
@@ -363,6 +381,7 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
         <span><b>Match volume across songs</b><small>Evens every song out to YouTube's playback level (-14 LUFS) so nothing jumps out louder or quieter.</small></span>
       </label>
       <button id="render" class="btn big" type="button" disabled>Make the video</button>
+      <p id="proof2" class="proof hidden"></p>
       <div id="progress" class="progress hidden" aria-live="polite">
         <div class="bar"><i id="barFill"></i></div>
         <div class="pmeta"><span id="pText">Starting</span><span id="pEta"></span></div>
@@ -381,6 +400,7 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
       </label>
       <label class="f"><span>Caption on the clip</span><input id="tzCta" type="text" value="Full album out now" autocomplete="off"></label>
       <label class="f"><span>File type</span><select id="tzFormat"></select></label>
+      <label class="check"><input id="tzCredit" type="checkbox" checked><span><b>Small "Made with Releasely" tag</b><small>Keeps this tool free. Untick to remove it.</small></span></label>
       <button id="tzMake" class="btn" type="button" disabled>Make teaser clips</button>
     </div>
     <div id="tzProgress" class="progress hidden" aria-live="polite">
@@ -401,20 +421,44 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
       <button id="dlVideo" class="btn" type="button">Download video</button>
       <span id="outInfo" class="note" style="align-self:center"></span>
     </div>
-    <label class="f" style="margin-top:14px"><span>Timestamps for your YouTube description</span>
+    <label class="f" style="margin-top:14px"><span>YouTube description (timestamps ready to paste)</span>
       <textarea id="stamps" spellcheck="false"></textarea>
     </label>
     <div class="btnrow">
-      <button id="copyStamps" class="btn ghost" type="button">Copy timestamps</button>
+      <button id="copyStamps" class="btn ghost" type="button">Copy description</button>
       <button id="dlStamps" class="btn ghost" type="button">Download as .txt</button>
     </div>
+    <label class="check" style="margin-top:6px"><input id="credit" type="checkbox" checked><span><b>Add a "Made with Releasely" line</b><small>One line under your timestamps. It's how other artists find this free tool.</small></span></label>
     <p id="stampWarn" class="note"></p>
+    <div id="proPreview" class="propreview hidden">
+      <canvas id="proVis" width="440" height="440" aria-label="Your cover with a moving visual"></canvas>
+      <div>
+        <h3 id="ppTitle">Here's your album with moving visuals</h3>
+        <p id="ppText">Same cover, now reacting to the beat. Moving visuals are free during beta, so you can make this version right now.</p>
+        <p id="ppDate" class="drop-date hidden"></p>
+        <div class="btnrow">
+          <button id="ppMake" class="btn" type="button">Make it with moving visuals</button>
+          <a id="ppFound" class="btn ghost hidden" href="#founding">Keep them after launch</a>
+        </div>
+      </div>
+    </div>
+    <div class="sharebox">
+      <h3>Send this to your producer or features</h3>
+      <p>They're dropping music too. Releasely is free for them.</p>
+      <div class="btnrow">
+        <button id="shCopy" class="btn ghost small" type="button">Copy link</button>
+        <button id="shNative" class="btn ghost small hidden" type="button">Share…</button>
+        <a id="shX" class="btn ghost small" href="#" target="_blank" rel="noopener">Post on X</a>
+      </div>
+    </div>
   </section>
   <section id="founding" class="card founding hidden" aria-labelledby="fm-h">
     <div class="fm-main">
       <span id="fmBadge" class="fm-badge">Founding offer</span>
-      <h2 id="fm-h">Become a Founding Member</h2>
+      <h2 id="fm-h">For artists who release like pros</h2>
       <p class="fm-lede">Releasely Pro is coming. Founding members lock in the lowest price we'll ever offer and get Pro the day it launches.</p>
+      <p id="fmDate" class="fm-lede hidden" style="color:var(--signal);font-weight:600"></p>
+      <p id="fmAnchor" class="fm-anchor">Hiring an editor for one music video: <s>$200+</s>. Founding member: <b id="fmAnchorPrice">a fraction of that</b>, for every release.</p>
       <ul class="fm-perks">
         <li>Every moving visual style, in full HD, with no end card</li>
         <li>Everything we add to Pro next, like lyric videos and Spotify Canvas loops</li>
@@ -425,6 +469,7 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
         <a id="fmBtn" class="btn fm-btn" href="#" target="_blank" rel="noopener">Become a founding member</a>
         <span id="fmPrice" class="fm-price"></span>
       </div>
+      <p id="fmProof" class="fm-proof hidden"></p>
       <p class="note">Use the email you'll sign up with later. That's how your Pro access gets unlocked. The core tools (album video, fades, volume matching, timestamps) stay free forever.</p>
     </div>
   </section>
@@ -472,7 +517,9 @@ window.DONATE_CONFIG = {
 window.FOUNDING_CONFIG = {
   url: "https://buy.stripe.com/8x2dR87Zqd2g9MBfQE63K04",
   price: "$49",        // e.g. "$49 for your first year". Must match your Stripe link.
-  spotsText: ""     // e.g. "Only 100 spots". Leave empty if there's no limit.
+  spotsText: "",    // e.g. "Only 100 spots". Leave empty if there's no limit.
+  spotsTotal: 100,  // founding spots available. Set to 0 for no limit.
+  spotsTaken: 0     // UPDATE THIS by hand as founding members join (check Stripe).
 };
 </script>
 
@@ -1671,8 +1718,10 @@ async function renderVideo(){
       $("outInfo").textContent = `${fmtTime(total/SR)} long, ${fmtBytes(blob.size)}, ${ext.toUpperCase()}`;
     }
     $("stamps").value = timestampsText(plan, total);
+    applyCredit();
     $("stampWarn").textContent = checkChapters(plan, total);
     $("result").classList.remove("hidden");
+    showProPreview();
     $("barFill").style.width = "100%";
     setMsg(`Done in ${fmtTime((performance.now()-t0wall)/1000)}. Download it below.`, "ok");
     countEvent("album");
@@ -1786,6 +1835,7 @@ async function makeTeasers(){
   $("tzMsg").textContent = ""; $("tzMsg").className = "msg";
   if (teaserOut) teaserOut.urls.forEach(u => URL.revokeObjectURL(u));
   const len = parseInt($("tzLen").value,10);
+  const tzCredit = $("tzCredit").checked;
   const base = document.createElement("canvas"); base.width=TW; base.height=TH;
   const bctx = base.getContext("2d");
   const frame = document.createElement("canvas"); frame.width=TW; frame.height=TH;
@@ -1825,6 +1875,7 @@ async function makeTeasers(){
             const bw = 880, bx = (TW-bw)/2, by = 1700;
             c.fillStyle = "rgba(255,255,255,.22)"; roundRect(c,bx,by,bw,10,5); c.fill();
             c.fillStyle = "#FFFFFF"; roundRect(c,bx,by,Math.max(10,bw*Math.min(1,ft*SR/a.n)),10,5); c.fill();
+            if (tzCredit){ c.save(); c.textAlign = "center"; c.textBaseline = "top"; c.fillStyle = "rgba(255,255,255,.55)"; c.font = `600 30px ${BODY}`; c.fillText("Made with Releasely Studio", TW/2, by+34); c.restore(); }
           };
           if (animated){
             const lt = hs + ft, st = reactSingle(t, lt);
@@ -1890,10 +1941,18 @@ $("tzDownload").onclick = async () => {
 };
 
 /* ---------- usage counter (a +1 only; no songs or personal info) ---------- */
+function artistId(){
+  // A random ID kept in this browser, so we can count unique artists. No songs, names or personal info.
+  try {
+    let id = localStorage.getItem("rl_aid");
+    if (!id){ id = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2,"0")).join(""); localStorage.setItem("rl_aid", id); }
+    return id;
+  } catch { return ""; }
+}
 function countEvent(name){
   try {
     if (!/^https?:$/.test(location.protocol)) return;
-    fetch("/api/count", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({event:name}), keepalive:true}).catch(()=>{});
+    fetch("/api/count", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({event:name, aid:artistId()}), keepalive:true}).catch(()=>{});
   } catch {}
 }
 async function showStats(){
@@ -1906,8 +1965,12 @@ async function showStats(){
     const parts = [];
     if (a) parts.push(`<b>${fmt(a)}</b> album video${a===1?"":"s"}`);
     if (t) parts.push(`<b>${fmt(t)}</b> teaser pack${t===1?"":"s"}`);
-    $("stats").innerHTML = parts.join(" and ") + " made on Releasely";
+    const made = parts.join(" and ") + " made on Releasely";
+    $("stats").innerHTML = made + (a ? `. Yours could be <b>#${fmt(a+1)}</b>.` : ".");
     $("stats").classList.remove("hidden");
+    if (a){ $("proof2").innerHTML = `Join the artists behind <b>${fmt(a)}</b> albums made here`; $("proof2").classList.remove("hidden"); }
+    $("fmProof").innerHTML = "Independent artists have already made " + made.replace(" made on Releasely","") + " with Releasely.";
+    $("fmProof").classList.remove("hidden");
   } catch {}
 }
 showStats();
@@ -1926,6 +1989,14 @@ async function saveFile(filename, data){
   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
   return true;
 }
+const SITE = location.origin && /^https?:$/.test(location.protocol) ? location.origin + "/" : "https://releaselystudio.releasely.workers.dev/";
+const CREDIT = "Video made free with Releasely Studio: " + SITE;
+function applyCredit(){
+  const ta = $("stamps");
+  const body = ta.value.split("\n\n" + CREDIT).join("").replace(/\s+$/,"");
+  ta.value = $("credit").checked && body ? body + "\n\n" + CREDIT : body;
+}
+$("credit").onchange = applyCredit;
 $("dlStamps").onclick = () => output && saveFile(output.stampsName, $("stamps").value);
 $("dlVideo").onclick = () => output && output.blob && saveFile(output.filename, output.blob);
 $("copyStamps").onclick = async () => {
@@ -1933,7 +2004,7 @@ $("copyStamps").onclick = async () => {
   try { await navigator.clipboard.writeText(ta.value); }
   catch { ta.select(); document.execCommand("copy"); }
   $("copyStamps").textContent = "Copied";
-  setTimeout(() => $("copyStamps").textContent = "Copy timestamps", 1500);
+  setTimeout(() => $("copyStamps").textContent = "Copy description", 1500);
 };
 
 /* ---------- donations ---------- */
@@ -2024,8 +2095,92 @@ function demoCover(size){
   $("topFound").classList.remove("hidden");
   $("fmBtn").href = cfg.url;
   if (cfg.price) $("fmBtn").textContent = "Join for " + cfg.price;
+  if (cfg.price) $("fmAnchorPrice").textContent = cfg.price;
   if (cfg.spotsText){ $("fmPrice").textContent = cfg.spotsText; $("fmBadge").textContent = "Limited founding spots"; }
+  const total = cfg.spotsTotal|0, left = Math.max(0, total - (cfg.spotsTaken|0));
+  if (total){
+    $("fmBadge").textContent = `Only ${total} founding spots`;
+    $("fmPrice").textContent = !left ? "All founding spots are taken" : left === total ? `First ${total} artists only` : `${left} of ${total} spots left`;
+    if (!left){ $("fmBtn").removeAttribute("href"); $("fmBtn").setAttribute("aria-disabled","true"); $("fmBtn").style.opacity = ".5"; }
+  }
 })();
+
+/* ---------- share after export ---------- */
+(function setupShare(){
+  const albumName = () => $("album").value.trim();
+  const text = () => (albumName() ? `Just made the full album video for "${albumName()}" with Releasely Studio. ` : "Just made my full album video with Releasely Studio. ") + "Free for independent artists:";
+  $("shCopy").onclick = async () => {
+    try { await navigator.clipboard.writeText(SITE); } catch {}
+    $("shCopy").textContent = "Copied"; setTimeout(() => $("shCopy").textContent = "Copy link", 1500);
+  };
+  if (navigator.share){ $("shNative").classList.remove("hidden"); $("shNative").onclick = () => navigator.share({title:"Releasely Studio", text:text(), url:SITE}).catch(()=>{}); }
+  $("shX").onclick = () => { $("shX").href = "https://x.com/intent/post?text=" + encodeURIComponent(text() + " " + SITE); };
+})();
+
+/* ---------- release date (kept only in this browser) ---------- */
+function releaseDate(){
+  const v = $("relDate").value; if (!v) return null;
+  const d = new Date(v + "T12:00:00"); if (isNaN(d)) return null;
+  const days = Math.round((d - new Date()) / 864e5);
+  return {d, days, label: d.toLocaleDateString(undefined, {month:"long", day:"numeric"})};
+}
+function dropLine(){
+  const r = releaseDate(); if (!r) return "";
+  const what = $("album").value.trim() || "Your album";
+  if (r.days > 1) return `${what} drops ${r.label}, ${r.days} days out. Make the rollout hit harder.`;
+  if (r.days >= 0) return `${what} drops ${r.days === 0 ? "today" : "tomorrow"}. Make the rollout hit harder.`;
+  return "";
+}
+function syncDrop(){
+  try { localStorage.setItem("rl_reldate", $("relDate").value); } catch {}
+  const line = dropLine();
+  $("fmDate").textContent = line; $("fmDate").classList.toggle("hidden", !line);
+  $("ppDate").textContent = line; $("ppDate").classList.toggle("hidden", !line);
+}
+try { const v = localStorage.getItem("rl_reldate"); if (v) $("relDate").value = v; } catch {}
+$("relDate").onchange = syncDrop;
+syncDrop();
+
+/* ---------- after export: their own cover with a moving visual ---------- */
+let ppVis = null, ppRaf = 0;
+async function showProPreview(){
+  const usedMotion = visStyle() !== "still";
+  const box = $("proPreview");
+  if (!supported){ box.classList.add("hidden"); return; }
+  if (usedMotion){
+    $("ppTitle").textContent = "Moving visuals: free while we're in beta";
+    $("ppText").textContent = "You made this one with a moving visual. When Pro launches, founding members keep every moving style.";
+    $("ppMake").classList.add("hidden");
+  } else {
+    $("ppTitle").textContent = "Here's your album with moving visuals";
+    $("ppText").textContent = "Same cover, now reacting to the beat. Moving visuals are free during beta, so you can make this version right now.";
+    $("ppMake").classList.remove("hidden");
+  }
+  $("ppFound").classList.toggle("hidden", !(window.FOUNDING_CONFIG||{}).url);
+  syncDrop();
+  try {
+    const THREE = await getThree();
+    if (ppVis){ cancelAnimationFrame(ppRaf); ppVis.dispose(); ppVis = null; }
+    const style = usedMotion ? visStyle() : "ring";
+    ppVis = new Visualizer(THREE, style, 440, false, {canvas: $("proVis"), cover: coverCanvas(1024)});
+    box.classList.remove("hidden");
+    const st = {bass:0, mid:0, high:0, pulse:0, spec:new Float32Array(32)};
+    const beat = 60/118, t0 = performance.now();
+    const loop = () => {
+      const t = (performance.now()-t0)/1000, ph = (t % beat)/beat, kick = Math.exp(-ph*7);
+      st.pulse = kick; st.bass = 0.35 + 0.55*kick; st.high = 0.45 + 0.3*Math.sin(t*6.1)*Math.sin(t*1.3);
+      for (let b=0;b<32;b++) st.spec[b] = Math.max(0, (b < 9 ? 0.25 + 0.6*kick : 0.25) + 0.28*Math.sin(t*(1.7+b*0.23)+b)*Math.sin(t*0.9+b*0.5));
+      const rb = []; for (let k=0;k<3;k++){ const age = ph*beat + k*beat*2; if (age < 1.3) rb.push({age, strength:0.8}); }
+      ppVis.setRingBeats(rb); ppVis.render(t, st, 0.75);
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) ppRaf = requestAnimationFrame(loop);
+    };
+    loop();
+  } catch { box.classList.add("hidden"); }
+}
+$("ppMake").onclick = () => {
+  $("visStyle").value = "ring"; $("visStyle").dispatchEvent(new Event("change"));
+  $("studio").scrollIntoView({behavior:"smooth", block:"start"});
+};
 
 initFormats().then(render);
 document.fonts?.ready?.then(drawPreview);
