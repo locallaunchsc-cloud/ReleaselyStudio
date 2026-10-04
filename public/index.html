@@ -973,11 +973,24 @@ function reactAlbum(plan, T){
 function reactSingle(t, lt){ const o = resetReact(REACT); if (t.analysis) reactTrackAt(t.analysis, lt, 1, o); return o; }
 
 function hexColor(h){ const n = parseInt(h.slice(1),16); return [(n>>16)&255, (n>>8)&255, n&255]; }
+function drawCoverFit(x, dx, dy, size){
+  // Shows the whole cover inside a square. Non-square art gets a blurred copy behind it instead of being cropped.
+  const iw = cover.width, ih = cover.height;
+  if (iw === ih){ x.drawImage(cover, dx, dy, size, size); return; }
+  x.fillStyle = "#000"; x.fillRect(dx, dy, size, size);
+  x.save(); x.beginPath(); x.rect(dx, dy, size, size); x.clip();
+  const f = Math.max(size/iw, size/ih);
+  x.filter = "blur(24px) brightness(.55)";
+  x.drawImage(cover, dx+(size-iw*f)/2-30, dy+(size-ih*f)/2-30, iw*f+60, ih*f+60);
+  x.filter = "none";
+  const k = Math.min(size/iw, size/ih), w = iw*k, h = ih*k;
+  x.drawImage(cover, dx+(size-w)/2, dy+(size-h)/2, w, h);
+  x.restore();
+}
 function coverCanvas(size){
   const c = document.createElement("canvas"); c.width = c.height = size; const x = c.getContext("2d");
   if (cover){
-    const s = Math.max(size/cover.width, size/cover.height), sw = size/s, sh = size/s;
-    x.drawImage(cover, (cover.width-sw)/2, (cover.height-sh)/2, sw, sh, 0, 0, size, size);
+    drawCoverFit(x, 0, 0, size);
   } else {
     const g = x.createLinearGradient(0,0,size,size); g.addColorStop(0,"#2B45D6"); g.addColorStop(1,"#141833");
     x.fillStyle = g; x.fillRect(0,0,size,size);
@@ -1439,8 +1452,7 @@ function drawFrame(ctx, current, textOnly){
   // cover square
   ctx.shadowColor = "rgba(0,0,0,.5)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 20;
   if (cover){
-    const s = Math.max(cs/cover.width, cs/cover.height), sw = cs/s, sh = cs/s;
-    ctx.drawImage(cover, (cover.width-sw)/2, (cover.height-sh)/2, sw, sh, cx, cy, cs, cs);
+    drawCoverFit(ctx, cx, cy, cs);
   } else {
     ctx.fillStyle = "#2B45D6"; ctx.fillRect(cx,cy,cs,cs);
   }
@@ -1790,8 +1802,7 @@ function drawTeaserBase(ctx, t, idx, textOnly){
   }
   ctx.shadowColor = "rgba(0,0,0,.5)"; ctx.shadowBlur = 70; ctx.shadowOffsetY = 24;
   if (cover){
-    const s = Math.max(cs/cover.width, cs/cover.height), sw = cs/s, sh = cs/s;
-    ctx.drawImage(cover, (cover.width-sw)/2, (cover.height-sh)/2, sw, sh, cx, cy, cs, cs);
+    drawCoverFit(ctx, cx, cy, cs);
   } else { ctx.fillStyle = "#2B45D6"; ctx.fillRect(cx,cy,cs,cs); }
   ctx.shadowColor = "transparent";
   if (!cover){
