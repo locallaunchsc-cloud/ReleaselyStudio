@@ -26,8 +26,13 @@ Needs a desktop browser with WebCodecs: Chrome or Edge recommended. Phones and S
 public/            the website (served as static files)
   index.html       the whole app
   favicon.svg/.ico, apple-touch-icon.png, og.png, robots.txt
-src/worker.js      tiny API for the usage counter (/api/count, /api/stats)
-wrangler.jsonc     Cloudflare config: Worker name, site folder, D1 database
+  account.html     artist account + referral dashboard
+  admin.html       referral admin (admins only)
+src/worker.js      API router: usage counter, accounts, referrals, Stripe webhook
+src/lib/           accounts, referrals, payments, commissions, admin, schema
+migrations/        the same database schema as SQL, for applying by hand
+test/              end-to-end referral test
+wrangler.jsonc     Cloudflare config: Worker name, site folder, D1 database, referral settings
 ```
 
 The app loads three small libraries from public CDNs: `webm-muxer` and `mp4-muxer` (jsDelivr) to package video files, and `JSZip` (cdnjs) to bundle teaser clips.
@@ -61,6 +66,10 @@ git push
 ```
 
 Cloudflare picks up the push and the live site updates in about a minute.
+
+## Referral program
+
+See [REFERRALS.md](REFERRALS.md) for how it works and the one-time setup.
 
 ## Roadmap
 

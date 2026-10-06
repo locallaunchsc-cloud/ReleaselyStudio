@@ -70,6 +70,8 @@ a{color:var(--signal)}
 .topcta{font-weight:600;font-size:.92rem;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 16px;background:rgba(22,26,69,.6)}
 .topcta:hover{border-color:var(--signal);color:var(--signal)}
 @media (max-width:600px){.topcta{display:none}}
+.navlinks{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:600px){.topcta.navacct{display:inline-flex;padding:7px 12px;font-size:.85rem}}
 
 /* hero */
 .hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:28px;align-items:center;padding:36px 0 44px}
@@ -276,7 +278,10 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
       </svg>
       <span class="wordmark">Releasely<span>Studio</span></span>
     </a>
-    <a id="topFound" class="topcta hidden" href="#founding">Founding member offer</a>
+    <div class="navlinks">
+      <a id="topFound" class="topcta hidden" href="#founding">Founding member offer</a>
+      <a id="navAccount" class="topcta navacct" href="/account.html">Invite artists, earn 20%</a>
+    </div>
   </nav>
   <header class="hero">
     <div class="hero-copy">
@@ -2113,6 +2118,23 @@ function demoCover(size){
     $("fmBadge").textContent = `Only ${total} founding spots`;
     $("fmPrice").textContent = !left ? "All founding spots are taken" : left === total ? `First ${total} artists only` : `${left} of ${total} spots left`;
     if (!left){ $("fmBtn").removeAttribute("href"); $("fmBtn").setAttribute("aria-disabled","true"); $("fmBtn").style.opacity = ".5"; }
+  }
+})();
+
+/* ---------- account: referral link in nav, tie founding payments to the account ---------- */
+(async function setupAccount(){
+  let me = null;
+  try { me = (await (await fetch("/api/me")).json()).user; } catch {}
+  if (!me) return;
+  $("navAccount").textContent = "Your referrals";
+  // Stripe hands these back in the webhook, so the payment (and any referral
+  // commission) lands on the right account even if they pay with another email.
+  const cfg = window.FOUNDING_CONFIG || {};
+  if (cfg.url && $("fmBtn").getAttribute("href")){
+    const u = new URL(cfg.url);
+    u.searchParams.set("client_reference_id", me.id);
+    u.searchParams.set("prefilled_email", me.email);
+    $("fmBtn").href = u.toString();
   }
 })();
 

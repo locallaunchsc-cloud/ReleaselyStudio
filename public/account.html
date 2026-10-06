@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your account · Releasely Studio</title>
+<meta name="description" content="Earn 20% when artists you refer pay for Releasely Studio.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<meta name="theme-color" content="#2B45D6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F1133; --bg-deep:#0A0C27; --panel:#161A45; --panel-2:#1C2053; --line:#2C3274; --line-soft:#232860;
+  --ink:#F1F2FF; --muted:#A7ACDB; --faint:#7479AE;
+  --cobalt:#4666FF; --cobalt-deep:#2B45D6; --signal:#F5D90A; --signal-ink:#1A1600;
+  --ok:#52D895; --warn:#FF8577;
+  --display:"Unbounded","Arial Black",Impact,system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r-lg:22px; --r-md:12px; --r-sm:8px;
+  color-scheme:dark; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  background:radial-gradient(900px 620px at 88% 2%,rgba(70,102,255,.30),transparent 62%),linear-gradient(180deg,var(--bg) 0%,var(--bg-deep) 100%);
+  background-color:var(--bg-deep)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+a{color:var(--signal)}
+.hidden{display:none !important}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 20px 60px}
+.brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:var(--display);font-weight:700;letter-spacing:-.02em}
+.brand svg{width:34px;height:34px}
+.brand span span{color:var(--muted);font-weight:700;margin-left:4px}
+.linkbtn{background:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--muted);cursor:pointer;font-size:.9rem;text-decoration:none}
+.linkbtn:hover{color:var(--ink);border-color:var(--muted)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(1.9rem,5vw,3.1rem);line-height:1.05;letter-spacing:-.04em;margin:0 0 12px;max-width:16ch}
+h2{font-family:var(--display);font-weight:700;font-size:1.15rem;letter-spacing:-.02em;margin:0 0 14px}
+.lede{color:var(--muted);font-size:1.08rem;max-width:58ch;margin:0 0 26px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px}
+.btn{border:0;border-radius:var(--r-md);padding:12px 18px;font-weight:600;cursor:pointer;background:var(--cobalt);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--cobalt-deep)}
+.btn.primary{background:var(--signal);color:var(--signal-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn[disabled]{opacity:.55;cursor:wait}
+label{display:block;font-size:.88rem;color:var(--muted);margin:0 0 6px}
+input,select{width:100%;background:var(--bg-deep);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 12px;margin-bottom:14px}
+input:focus,select:focus{border-color:var(--cobalt);outline:none}
+.msg{min-height:1.4em;font-size:.92rem;margin:4px 0 0}
+.msg.bad{color:var(--warn)} .msg.good{color:var(--ok)}
+
+/* auth */
+.auth{max-width:440px}
+.tabs{display:flex;gap:6px;margin-bottom:18px;background:var(--bg-deep);border-radius:999px;padding:4px;width:max-content}
+.tabs button{border:0;background:none;padding:8px 16px;border-radius:999px;color:var(--muted);cursor:pointer;font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--panel-2);color:var(--ink)}
+.invited{border-left:3px solid var(--signal);padding:10px 14px;background:rgba(245,217,10,.07);border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:18px}
+
+/* referral link: the one loud element on the page */
+.share{background:linear-gradient(135deg,var(--cobalt-deep),#3B2BB0);border:0;padding:28px}
+.share .rate{font-family:var(--display);font-weight:900;font-size:clamp(3rem,10vw,5.2rem);line-height:.9;letter-spacing:-.06em;color:var(--signal);margin:0}
+.share .rate-sub{font-size:1.1rem;margin:8px 0 22px;max-width:36ch}
+.linkrow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.linkbox{flex:1 1 260px;background:rgba(10,12,39,.55);border:1px solid rgba(255,255,255,.18);border-radius:var(--r-md);padding:12px 14px;font-weight:600;overflow-x:auto;white-space:nowrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.share .btn.ghost{border-color:rgba(255,255,255,.3)}
+.invite{margin-top:16px;background:rgba(10,12,39,.45);border-radius:var(--r-md);padding:16px}
+.invite p{margin:0 0 12px;white-space:pre-wrap}
+
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));margin-top:16px}
+.money{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border-radius:var(--r-md);overflow:hidden}
+.money div{background:var(--panel);padding:14px 16px}
+.money b{display:block;font-size:1.45rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.money span{color:var(--muted);font-size:.86rem}
+.money .avail b{color:var(--ok)}
+.money .owed{display:block;color:var(--warn);font-size:.8rem;margin-top:4px}
+.how{margin:0;padding-left:1.2em;color:var(--muted)} .how li{margin-bottom:8px} .how b{color:var(--ink)}
+
+.tablewrap{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:.93rem;min-width:520px}
+th{text-align:left;color:var(--faint);font-weight:500;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:10px 8px;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+td.num,th.num{text-align:right}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8rem;font-weight:600;background:var(--panel-2);color:var(--muted)}
+.pill.pending,.pill.held{color:var(--signal)} .pill.available,.pill.paid{color:var(--ok)} .pill.reversed{color:var(--warn)}
+.empty{color:var(--muted);margin:0}
+.payrow{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:10px}
+@media (max-width:520px){.payrow{grid-template-columns:1fr}}
+footer{margin-top:40px;color:var(--faint);font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="brandbar">
+    <a class="brand" href="/">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#4666FF"/><path d="M14 38v-6a18 18 0 0 1 36 0v6" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><rect x="10" y="35" width="11" height="17" rx="4.5" fill="#fff"/><rect x="43" y="35" width="11" height="17" rx="4.5" fill="#fff"/><path d="M27 44v-4M32 47v-10M37 44v-4" stroke="#F5D90A" stroke-width="3.2" stroke-linecap="round"/></svg>
+      <span>Releasely<span>Studio</span></span>
+    </a>
+    <div>
+      <a id="adminLink" class="linkbtn hidden" href="/admin.html">Admin</a>
+      <button id="logoutBtn" class="linkbtn hidden" type="button">Log out</button>
+    </div>
+  </nav>
+
+  <p id="loading" class="empty">Loading…</p>
+
+  <!-- Signed out -->
+  <section id="authView" class="hidden">
+    <h1>Invite artists. Earn 20%.</h1>
+    <p class="lede">Make a free account to get your referral link. When artists you invite pay for Releasely Studio, you earn 20% of every payment.</p>
+    <div class="card auth">
+      <div id="invited" class="invited hidden"></div>
+      <div class="tabs" role="tablist">
+        <button id="tabSignup" role="tab" aria-selected="true" type="button">Create account</button>
+        <button id="tabLogin" role="tab" aria-selected="false" type="button">Log in</button>
+      </div>
+      <form id="authForm" novalidate>
+        <div id="nameField">
+          <label for="name">Artist name</label>
+          <input id="name" autocomplete="nickname" maxlength="60">
+        </div>
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="new-password" minlength="8" required>
+        <button id="authBtn" class="btn primary" type="submit" style="width:100%">Create account</button>
+        <p id="authMsg" class="msg" role="status"></p>
+        <p id="emailHint" class="msg" style="color:var(--faint)">Founding member? Use the email you paid with so your Pro access carries over.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Signed in -->
+  <section id="dashView" class="hidden">
+    <div class="card share">
+      <p class="rate">20%</p>
+      <p class="rate-sub">Earn 20% when artists you refer pay for ReleaselyStudio.</p>
+      <div class="linkrow">
+        <div id="refLink" class="linkbox" aria-label="Your referral link"></div>
+        <button id="copyBtn" class="btn primary" type="button">Copy Referral Link</button>
+      </div>
+      <div class="actions">
+        <button id="inviteBtn" class="btn ghost" type="button" aria-expanded="false" aria-controls="invitePanel">Invite Artists</button>
+        <button id="shareBtn" class="btn ghost" type="button">Share</button>
+      </div>
+      <div id="invitePanel" class="invite hidden">
+        <p id="inviteText"></p>
+        <div class="actions" style="margin-top:0">
+          <button id="copyInvite" class="btn primary" type="button">Copy message</button>
+          <a id="inviteX" class="btn ghost" target="_blank" rel="noopener">Post on X</a>
+          <a id="inviteWa" class="btn ghost" target="_blank" rel="noopener">WhatsApp</a>
+          <a id="inviteMail" class="btn ghost">Email</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Your earnings</h2>
+        <div class="money">
+          <div><b id="sEarned">$0.00</b><span>Total commissions earned</span></div>
+          <div><b id="sPending">$0.00</b><span>Pending</span></div>
+          <div class="avail"><b id="sAvailable">$0.00</b><span>Available</span><span id="sOwed" class="owed hidden"></span></div>
+          <div><b id="sPaid">$0.00</b><span>Paid to you</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Your referrals</h2>
+        <div class="money">
+          <div><b id="sReferred">0</b><span>Artists referred</span></div>
+          <div><b id="sPaying">0</b><span>Became paying customers</span></div>
+          <div><b id="sRevenue">$0.00</b><span>Revenue from your referrals</span></div>
+          <div><b id="sVisits">0</b><span>Link visits</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>How it works</h2>
+        <ol class="how">
+          <li>Share your link. Artists who sign up through it are <b>yours for good</b>.</li>
+          <li>When they pay for Pro, you earn <b id="howRate">20%</b> of what they paid. <b>Every renewal counts</b> for as long as they stay subscribed.</li>
+          <li>Each commission is <b>pending for <span id="howHold">30</span> days</b> in case of a refund, then becomes available.</li>
+          <li>Refunded or charged-back payments don't earn commission.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Where to send your money</h2>
+        <form id="payForm" class="payrow">
+          <div>
+            <label for="payMethod">Method</label>
+            <select id="payMethod">
+              <option value="">Choose…</option>
+              <option value="paypal">PayPal</option>
+              <option value="cashapp">Cash App</option>
+              <option value="venmo">Venmo</option>
+              <option value="usdc_solana">USDC on Solana</option>
+              <option value="usdc_base">USDC on Base</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="payHandle">Email, $cashtag, @handle or wallet</label>
+            <input id="payHandle" maxlength="120">
+          </div>
+          <div style="grid-column:1/-1">
+            <button class="btn" type="submit">Save payout details</button>
+            <p id="payMsg" class="msg" role="status"></p>
+            <p class="msg" style="color:var(--faint)">Payouts go out once you have at least <span id="minPayout">$20</span> available.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Referral history</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Artist</th><th>Joined</th><th>Status</th><th class="num">They paid</th><th class="num">You earned</th></tr></thead>
+          <tbody id="refRows"></tbody>
+        </table>
+      </div>
+      <p id="refEmpty" class="empty hidden">Nobody has signed up through your link yet. Send it to an artist who's about to drop something.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Commission history</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Date</th><th>Artist</th><th class="num">Payment</th><th class="num">Commission</th><th>Status</th></tr></thead>
+          <tbody id="comRows"></tbody>
+        </table>
+      </div>
+      <p id="comEmpty" class="empty hidden">Commissions show up here the moment a referred artist pays.</p>
+    </div>
+  </section>
+
+  <footer>Releasely Studio. Built by an independent artist, for independent artists.</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const money = (c) => (c < 0 ? "-$" : "$") + (Math.abs(c) / 100).toFixed(2);
+const day = (iso) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+const STATUS = { pending: "Pending", held: "In review", available: "Available", paid: "Paid", reversed: "Reversed" };
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  let data = {}; try { data = await r.json(); } catch {}
+  return { status: r.status, ...data };
+}
+
+// Same anonymous id the album tool uses, so duplicate accounts can be spotted.
+function deviceId() {
+  try {
+    let id = localStorage.getItem("rl_aid");
+    if (!id) { id = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join(""); localStorage.setItem("rl_aid", id); }
+    return id;
+  } catch { return ""; }
+}
+
+function cell(text, cls) { const td = document.createElement("td"); td.textContent = text; if (cls) td.className = cls; return td; }
+function pill(status) { const td = document.createElement("td"); const s = document.createElement("span"); s.className = "pill " + status; s.textContent = STATUS[status] || status; td.append(s); return td; }
+
+/* ---------- signed out ---------- */
+let mode = "signup";
+const refParam = new URLSearchParams(location.search).get("ref") || "";
+function setMode(m) {
+  mode = m;
+  $("tabSignup").setAttribute("aria-selected", m === "signup");
+  $("tabLogin").setAttribute("aria-selected", m === "login");
+  $("nameField").classList.toggle("hidden", m !== "signup");
+  $("emailHint").classList.toggle("hidden", m !== "signup");
+  $("authBtn").textContent = m === "signup" ? "Create account" : "Log in";
+  $("password").autocomplete = m === "signup" ? "new-password" : "current-password";
+  $("authMsg").textContent = "";
+}
+$("tabSignup").onclick = () => setMode("signup");
+$("tabLogin").onclick = () => setMode("login");
+
+$("authForm").onsubmit = async (e) => {
+  e.preventDefault();
+  $("authBtn").disabled = true; $("authMsg").className = "msg"; $("authMsg").textContent = "";
+  const body = { email: $("email").value, password: $("password").value };
+  if (mode === "signup") Object.assign(body, { name: $("name").value, device: deviceId(), ref: refParam });
+  const r = await api(mode === "signup" ? "/api/auth/signup" : "/api/auth/login", body);
+  $("authBtn").disabled = false;
+  if (!r.ok) { $("authMsg").className = "msg bad"; $("authMsg").textContent = r.error || "That didn't work. Try again."; return; }
+  start();
+};
+
+async function showAuth() {
+  $("authView").classList.remove("hidden");
+  const p = await api("/api/referrals/pending" + (refParam ? "?ref=" + encodeURIComponent(refParam) : ""));
+  if (p.referrer) { $("invited").textContent = `${p.referrer.name} invited you to Releasely Studio.`; $("invited").classList.remove("hidden"); }
+  else setMode(location.hash === "#login" ? "login" : "signup");
+}
+
+/* ---------- signed in ---------- */
+let link = "";
+const inviteMessage = () =>
+  `I've been using Releasely Studio to turn my album into a full YouTube video with fades, timestamps and TikTok teasers. It's free to start:\n${link}`;
+
+async function copy(text, btn, label) {
+  try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+  catch { btn.textContent = "Press Ctrl+C"; }
+  setTimeout(() => (btn.textContent = label), 1600);
+}
+$("copyBtn").onclick = () => copy(link, $("copyBtn"), "Copy Referral Link");
+$("copyInvite").onclick = () => copy(inviteMessage(), $("copyInvite"), "Copy message");
+$("shareBtn").onclick = async () => {
+  if (navigator.share) { try { await navigator.share({ title: "Releasely Studio", text: inviteMessage().replace(link, "").trim(), url: link }); } catch {} }
+  else copy(link, $("shareBtn"), "Share");
+};
+$("inviteBtn").onclick = () => {
+  const open = $("invitePanel").classList.toggle("hidden") === false;
+  $("inviteBtn").setAttribute("aria-expanded", open);
+};
+$("logoutBtn").onclick = async () => { await api("/api/auth/logout", {}); location.reload(); };
+
+$("payForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const r = await api("/api/referrals/payout-method", { method: $("payMethod").value, handle: $("payHandle").value });
+  $("payMsg").className = "msg " + (r.ok ? "good" : "bad");
+  $("payMsg").textContent = r.ok ? "Saved." : r.error;
+};
+
+async function showDashboard(user) {
+  const d = await api("/api/referrals/me");
+  if (!d.ok) { $("loading").textContent = d.error || "Couldn't load your dashboard."; $("loading").classList.remove("hidden"); return; }
+  link = d.link;
+  $("refLink").textContent = link;
+  $("inviteText").textContent = inviteMessage();
+  $("inviteX").href = "https://x.com/intent/post?text=" + encodeURIComponent(inviteMessage());
+  $("inviteWa").href = "https://wa.me/?text=" + encodeURIComponent(inviteMessage());
+  $("inviteMail").href = "mailto:?subject=" + encodeURIComponent("Make your album video with Releasely Studio") + "&body=" + encodeURIComponent(inviteMessage());
+
+  const s = d.stats;
+  $("sEarned").textContent = money(s.earned_cents);
+  $("sPending").textContent = money(s.pending_cents);
+  $("sAvailable").textContent = money(s.available_cents);
+  $("sPaid").textContent = money(s.paid_cents);
+  $("sOwed").textContent = `${money(s.owed_cents)} from a refund comes off your next payout`;
+  $("sOwed").classList.toggle("hidden", !s.owed_cents);
+  $("sReferred").textContent = s.referred;
+  $("sPaying").textContent = s.paying;
+  $("sRevenue").textContent = money(s.revenue_cents);
+  $("sVisits").textContent = s.link_visits;
+  $("howRate").textContent = d.rate_percent + "%";
+  $("howHold").textContent = d.hold_days;
+  $("minPayout").textContent = money(d.min_payout_cents);
+  $("payMethod").value = d.payout.method; $("payHandle").value = d.payout.handle;
+
+  const rr = $("refRows"); rr.replaceChildren();
+  for (const r of d.referrals) {
+    const tr = document.createElement("tr");
+    tr.append(cell(r.artist), cell(day(r.joined_at)), cell(r.paying ? "Paying" : "Free"), cell(money(r.revenue_cents), "num"), cell(money(r.commission_cents), "num"));
+    rr.append(tr);
+  }
+  $("refEmpty").classList.toggle("hidden", d.referrals.length > 0);
+
+  const cr = $("comRows"); cr.replaceChildren();
+  for (const c of d.commissions) {
+    const tr = document.createElement("tr");
+    const who = c.kind === "clawback" ? `${c.artist} (refund after payout)` : c.artist;
+    tr.append(cell(day(c.created_at)), cell(who), cell(c.payment_cents ? money(c.payment_cents) : "—", "num"), cell(money(c.amount_cents), "num"), pill(c.status));
+    cr.append(tr);
+  }
+  $("comEmpty").classList.toggle("hidden", d.commissions.length > 0);
+
+  $("logoutBtn").classList.remove("hidden");
+  $("adminLink").classList.toggle("hidden", !user.is_admin);
+  $("dashView").classList.remove("hidden");
+}
+
+async function start() {
+  $("authView").classList.add("hidden");
+  const me = await api("/api/me");
+  $("loading").classList.add("hidden");
+  if (me.user) showDashboard(me.user); else showAuth();
+}
+start();
+</script>
+</body>
+</html>

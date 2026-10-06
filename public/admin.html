@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Referral admin · Releasely Studio</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="robots" content="noindex">
+<style>
+:root{
+  --bg:#0F1133; --bg-deep:#0A0C27; --panel:#161A45; --panel-2:#1C2053; --line:#2C3274; --line-soft:#232860;
+  --ink:#F1F2FF; --muted:#A7ACDB; --faint:#7479AE; --cobalt:#4666FF; --signal:#F5D90A; --signal-ink:#1A1600;
+  --ok:#52D895; --warn:#FF8577;
+  color-scheme:dark; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg-deep);color:var(--ink);font:15px/1.5 "IBM Plex Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+a{color:var(--signal)}
+.hidden{display:none !important}
+.wrap{max-width:1280px;margin:0 auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+h1{font-size:1.3rem;margin:0}
+h2{font-size:1.05rem;margin:0 0 12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.kpis div{background:var(--panel);padding:14px}
+.kpis b{display:block;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.kpis span{color:var(--muted);font-size:.84rem}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--signal)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:760px}
+th{text-align:left;color:var(--faint);font-weight:500;padding:7px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 7px;border-bottom:1px solid var(--line-soft);vertical-align:top;font-variant-numeric:tabular-nums}
+.num{text-align:right}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--panel-2);color:var(--muted)}
+.pending,.held{color:var(--signal)} .available,.paid,.active{color:var(--ok)} .reversed,.blocked{color:var(--warn)}
+.flag{display:inline-block;margin:0 4px 4px 0;padding:1px 7px;border-radius:6px;font-size:.75rem;background:rgba(255,133,119,.14);color:var(--warn)}
+.btn{border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.82rem;margin:0 4px 4px 0}
+.btn:hover{border-color:var(--muted)}
+.btn.main{background:var(--signal);color:var(--signal-ink);border-color:var(--signal);font-weight:600;padding:9px 14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.row label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted)}
+input,select{background:var(--bg-deep);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:150px}
+.msg{min-height:1.3em;color:var(--muted);margin:6px 0 0}
+.sub{color:var(--faint);font-size:.8rem}
+#gate{max-width:420px;margin:80px auto;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="gate">Loading…</div>
+  <div id="app" class="hidden">
+    <header>
+      <h1>Referral program</h1>
+      <span class="sub" id="settings"></span>
+    </header>
+
+    <div class="kpis">
+      <div><b id="kReferrers">0</b><span>Referrers</span></div>
+      <div><b id="kReferred">0</b><span>Referred artists</span></div>
+      <div><b id="kPaying">0</b><span>Became paying</span></div>
+      <div><b id="kConv">0%</b><span>Referral conversion</span></div>
+      <div><b id="kVisits">0</b><span>Link visits (<span id="kVisitConv">0%</span> sign up)</span></div>
+      <div><b id="kRevenue">$0</b><span>Revenue from referrals</span></div>
+      <div><b id="kCommissions">$0</b><span>Commissions (net)</span></div>
+      <div><b id="kHeld">0</b><span>Held for review</span></div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="commissions" aria-selected="true">Commissions</button>
+      <button role="tab" data-tab="referrers" aria-selected="false">Referrers</button>
+      <button role="tab" data-tab="referrals" aria-selected="false">Referred artists</button>
+      <button role="tab" data-tab="payouts" aria-selected="false">Payouts &amp; adjustments</button>
+    </div>
+
+    <section id="tab-commissions" class="panel">
+      <div class="row">
+        <label>Status
+          <select id="cFilter">
+            <option value="">All</option><option value="held">Held for review</option><option value="pending">Pending</option>
+            <option value="available">Available</option><option value="paid">Paid</option><option value="reversed">Reversed</option>
+          </select>
+        </label>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>#</th><th>Date</th><th>Referrer</th><th>Referred artist</th><th>Kind</th><th class="num">Payment</th><th class="num">Commission</th><th>Status</th><th>Flags / note</th><th>Actions</th></tr></thead>
+        <tbody id="cRows"></tbody>
+      </table></div>
+      <p id="cMsg" class="msg"></p>
+    </section>
+
+    <section id="tab-referrers" class="panel hidden">
+      <div class="tablewrap"><table>
+        <thead><tr><th>Referrer</th><th>Code</th><th class="num">Visits</th><th class="num">Referred</th><th class="num">Paying</th><th class="num">Conversion</th><th class="num">Revenue</th><th class="num">Pending</th><th class="num">Available</th><th class="num">Paid</th><th>Payout to</th></tr></thead>
+        <tbody id="rRows"></tbody>
+      </table></div>
+    </section>
+
+    <section id="tab-referrals" class="panel hidden">
+      <div class="tablewrap"><table>
+        <thead><tr><th>Signed up</th><th>Referred artist</th><th>Referred by</th><th>Plan</th><th class="num">Revenue</th><th class="num">Commission</th><th>Flags</th><th>Status</th><th></th></tr></thead>
+        <tbody id="aRows"></tbody>
+      </table></div>
+      <p class="sub">Blocking stops future commissions for that artist. It never changes who referred them.</p>
+    </section>
+
+    <section id="tab-payouts" class="panel hidden">
+      <h2>Record a payout</h2>
+      <p class="sub">Send the money yourself (PayPal, Cash App, USDC…), then record it here. Every available commission for that referrer is marked paid, net of any clawbacks.</p>
+      <form id="payoutForm" class="row">
+        <label>Referrer email or code<input id="pRef" required></label>
+        <label>Method<input id="pMethod" placeholder="paypal"></label>
+        <label>Reference<input id="pRefNo" placeholder="transaction id"></label>
+        <button class="btn main" type="submit">Record payout</button>
+      </form>
+      <p id="pMsg" class="msg"></p>
+      <h2 style="margin-top:24px">Manual adjustment</h2>
+      <p class="sub">A bonus (positive) or correction (negative), in cents. 500 = $5.00.</p>
+      <form id="adjForm" class="row">
+        <label>Referrer email or code<input id="jRef" required></label>
+        <label>Amount (cents)<input id="jAmt" type="number" step="1" required></label>
+        <label>Note<input id="jNote" required></label>
+        <button class="btn main" type="submit">Add adjustment</button>
+      </form>
+      <p id="jMsg" class="msg"></p>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const money = (c) => (c < 0 ? "-$" : "$") + (Math.abs(c || 0) / 100).toFixed(2);
+const pct = (x) => (x * 100).toFixed(1).replace(/\.0$/, "") + "%";
+const day = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" }) : "");
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  let d = {}; try { d = await r.json(); } catch {}
+  return { status: r.status, ...d };
+}
+function td(text, cls) { const c = document.createElement("td"); if (text instanceof Node) c.append(text); else c.textContent = text ?? ""; if (cls) c.className = cls; return c; }
+function span(text, cls) { const s = document.createElement("span"); s.textContent = text; s.className = cls; return s; }
+function flags(list, note) {
+  const f = document.createDocumentFragment();
+  for (const x of list || []) f.append(span(x.replace(/_/g, " "), "flag"));
+  if (note) { const n = document.createElement("div"); n.className = "sub"; n.textContent = note; f.append(n); }
+  return f;
+}
+function button(label, fn) { const b = document.createElement("button"); b.className = "btn"; b.type = "button"; b.textContent = label; b.onclick = fn; return b; }
+
+document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach((x) => x.setAttribute("aria-selected", x === b));
+  document.querySelectorAll("section.panel").forEach((s) => s.classList.toggle("hidden", s.id !== "tab-" + b.dataset.tab));
+});
+
+async function loadOverview() {
+  const o = await api("/api/admin/overview");
+  $("kReferrers").textContent = o.referrers; $("kReferred").textContent = o.referred; $("kPaying").textContent = o.paying;
+  $("kConv").textContent = pct(o.conversion_rate); $("kVisits").textContent = o.link_visits; $("kVisitConv").textContent = pct(o.visit_to_signup_rate);
+  $("kRevenue").textContent = money(o.referred_revenue_cents); $("kCommissions").textContent = money(o.commissions_cents);
+  $("kHeld").textContent = o.by_status.held?.count || 0;
+  $("settings").textContent = `${o.settings.rate_percent}% commission, ${o.settings.hold_days}-day hold, ${o.settings.months ? o.settings.months + " months" : "lifetime"}`;
+}
+
+async function act(id, action, extra = {}) {
+  const note = action === "set_amount" ? "" : prompt(`Note for "${action}" (optional):`) ?? null;
+  if (note === null && action !== "set_amount") return;
+  const r = await api(`/api/admin/commissions/${id}`, { action, note, ...extra });
+  $("cMsg").textContent = r.ok ? `Commission #${id}: ${action} done.` : r.error;
+  refresh();
+}
+
+async function loadCommissions() {
+  const d = await api("/api/admin/commissions" + ($("cFilter").value ? "?status=" + $("cFilter").value : ""));
+  const body = $("cRows"); body.replaceChildren();
+  for (const c of d.commissions) {
+    const tr = document.createElement("tr");
+    const actions = document.createElement("div");
+    const blocked = ["refunded", "disputed", "fraud_warning"].includes(c.payment_status);
+    if (c.status !== "paid") {
+      if (c.status !== "available" && !blocked) actions.append(button("Approve", () => act(c.id, "approve")));
+      if (c.status !== "held" && c.status !== "reversed") actions.append(button("Hold", () => act(c.id, "hold")));
+      if (c.status !== "reversed") actions.append(button("Reverse", () => act(c.id, "reverse")));
+      if (c.status === "reversed" && !blocked) actions.append(button("Restore", () => act(c.id, "restore")));
+      actions.append(button("Edit $", () => {
+        const v = prompt("New commission in cents (1000 = $10.00):", c.amount_cents);
+        if (v !== null) act(c.id, "set_amount", { amount_cents: Number(v), note: "amount edited" });
+      }));
+    }
+    actions.append(button("Log", async () => {
+      const h = await api(`/api/admin/commissions/${c.id}/history`);
+      alert(h.events.map((e) => `${e.at.slice(0, 16).replace("T", " ")}  ${e.actor}  ${e.action}  ${e.from_status || ""}→${e.to_status || ""}  ${e.amount_cents != null ? money(e.amount_cents) : ""}  ${e.note || ""}`).join("\n"));
+    }));
+    const payment = c.payment_cents ? money(c.payment_cents) + (c.refunded_cents ? ` (−${money(c.refunded_cents)} refunded)` : "") : "—";
+    tr.append(td(c.id), td(day(c.created_at)), td(c.referrer_email), td(c.referred_email || "—"), td(c.kind), td(payment, "num"),
+      td(money(c.amount_cents), "num"), td(span(c.status, "pill " + c.status)), td(flags(c.flags, c.note)), td(actions));
+    body.append(tr);
+  }
+  if (!d.commissions.length) { const tr = document.createElement("tr"); const c = td("No commissions match."); c.colSpan = 10; tr.append(c); body.append(tr); }
+}
+
+async function loadReferrers() {
+  const d = await api("/api/admin/referrers");
+  const body = $("rRows"); body.replaceChildren();
+  for (const r of d.referrers) {
+    const tr = document.createElement("tr");
+    const who = document.createElement("div"); who.textContent = r.display_name || "—";
+    const em = document.createElement("div"); em.className = "sub"; em.textContent = r.email; who.append(em);
+    tr.append(td(who), td(r.ref_code), td(r.visits, "num"), td(r.referred, "num"), td(r.paying, "num"),
+      td(r.referred ? pct(r.paying / r.referred) : "—", "num"), td(money(r.revenue_cents), "num"), td(money(r.pending_cents), "num"),
+      td(money(r.available_cents), "num"), td(money(r.paid_cents), "num"), td(r.payout_method ? `${r.payout_method}: ${r.payout_handle}` : "not set"));
+    body.append(tr);
+  }
+}
+
+async function loadReferrals() {
+  const d = await api("/api/admin/referrals");
+  const body = $("aRows"); body.replaceChildren();
+  for (const r of d.referrals) {
+    const tr = document.createElement("tr");
+    const next = r.status === "active" ? "blocked" : "active";
+    const b = button(r.status === "active" ? "Block" : "Unblock", async () => {
+      if (!confirm(`${next === "blocked" ? "Block" : "Unblock"} commissions for ${r.referred_email}?`)) return;
+      await api(`/api/admin/referrals/${r.id}`, { status: next }); refresh();
+    });
+    tr.append(td(day(r.created_at)), td(r.referred_email), td(`${r.referrer_email} (${r.ref_code})`), td(r.plan),
+      td(money(r.revenue_cents), "num"), td(money(r.commission_cents), "num"), td(flags(r.flags)), td(span(r.status, "pill " + r.status)), td(b));
+    body.append(tr);
+  }
+}
+
+$("cFilter").onchange = loadCommissions;
+$("payoutForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const r = await api("/api/admin/payouts", { referrer: $("pRef").value.trim(), method: $("pMethod").value, reference: $("pRefNo").value });
+  $("pMsg").textContent = r.ok ? `Payout #${r.payout_id} recorded: ${money(r.amount_cents)}.` : r.error;
+  refresh();
+};
+$("adjForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const r = await api("/api/admin/adjustments", { referrer: $("jRef").value.trim(), amount_cents: Number($("jAmt").value), note: $("jNote").value });
+  $("jMsg").textContent = r.ok ? "Adjustment added." : r.error;
+  refresh();
+};
+
+function refresh() { loadOverview(); loadCommissions(); loadReferrers(); loadReferrals(); }
+
+(async () => {
+  const me = await api("/api/me");
+  if (!me.user) { $("gate").innerHTML = 'Log in first. <a href="/account.html#login">Go to login</a>'; return; }
+  if (!me.user.is_admin) { $("gate").textContent = "This page is for the Releasely admin only."; return; }
+  $("gate").classList.add("hidden"); $("app").classList.remove("hidden");
+  refresh();
+})();
+</script>
+</body>
+</html>

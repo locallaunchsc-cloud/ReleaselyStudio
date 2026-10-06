@@ -4,18 +4,37 @@
   "main": "src/worker.js",
   "compatibility_date": "2026-09-01",
 
-  // The website itself lives in /public.
+  // The website itself lives in /public. The Worker runs first only for the
+  // homepage (to catch ?ref= links) and the API; other files are served directly.
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "run_worker_first": ["/", "/index.html", "/api/*"]
   },
 
-  // Usage counter database.
+  // Usage counter, accounts, referrals and commissions all live in this database.
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "releasely",
       "database_id": "4ea1716e-109e-4958-81fd-88463b0a1b40"
     }
-  ]
+  ],
+
+  // Referral program settings. Change and push to update.
+  "vars": {
+    "COMMISSION_RATE_BPS": "2000",   // 2000 = 20%
+    "COMMISSION_HOLD_DAYS": "30",    // days a commission waits before it can be paid (refund window)
+    "COMMISSION_MONTHS": "0",        // 0 = earn for as long as the referred artist keeps paying
+    "MIN_PAYOUT_CENTS": "2000",      // shown to artists as the payout minimum ($20)
+    "REF_COOKIE_DAYS": "60",
+    "ADMIN_USER_IDS": ""             // your account id from /api/me (see REFERRALS.md)
+  },
+  // Secrets (set once, never committed):
+  //   npx wrangler secret put STRIPE_WEBHOOK_SECRET   (required)
+  //   npx wrangler secret put STRIPE_SECRET_KEY       (optional, read-only lookups)
+  //   npx wrangler secret put IP_SALT                 (any long random string)
+
+  // Matures pending commissions every hour.
+  "triggers": { "crons": ["0 * * * *"] }
 }
