@@ -28,7 +28,7 @@
     "COMMISSION_MONTHS": "0",        // 0 = earn for as long as the referred artist keeps paying
     "MIN_PAYOUT_CENTS": "2000",      // shown to artists as the payout minimum ($20)
     "REF_COOKIE_DAYS": "60",
-    "ADMIN_USER_IDS": ""             // your account id from /api/me (see REFERRALS.md)
+    "ADMIN_USER_IDS": "8543af4d4de190b570db001e"             // your account id from /api/me (see REFERRALS.md)
   },
   // Secrets (set once, never committed):
   //   npx wrangler secret put STRIPE_WEBHOOK_SECRET   (required)
