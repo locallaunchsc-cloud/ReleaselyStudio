@@ -225,6 +225,11 @@ textarea{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.
 /* growth: social proof, share, pro preview */
 .proof{font-size:.92rem;color:var(--muted);margin:10px 0 0;text-align:center}
 .proof b{color:var(--ink)}
+.relcard{margin-top:18px;display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:20px;align-items:center;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.03)}
+.relcard canvas{width:100%;aspect-ratio:4/5;border-radius:var(--r-md);background:#0d1030;display:block}
+.relcard h3{margin:0 0 4px;font-size:1.05rem}
+.relcard p{margin:0 0 10px;color:var(--muted);font-size:.92rem}
+@media (max-width:640px){.relcard{grid-template-columns:1fr}}
 .sharebox{margin-top:18px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(255,255,255,.03)}
 .sharebox h3{margin:0 0 4px;font-size:1.05rem}
 .sharebox p{margin:0 0 6px;color:var(--muted);font-size:.92rem}
@@ -385,6 +390,10 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
         <input id="matchVol" type="checkbox" checked>
         <span><b>Match volume across songs</b><small>Evens every song out to YouTube's playback level (-14 LUFS) so nothing jumps out louder or quieter.</small></span>
       </label>
+      <label class="check">
+        <input id="endCard" type="checkbox" checked>
+        <span><b>Add a 4-second end card</b><small>A clean closing screen with your cover and "Made with Releasely Studio". It's how other artists find out how you made this. Untick to leave it off.</small></span>
+      </label>
       <button id="render" class="btn big" type="button" disabled>Make the video</button>
       <p id="proof2" class="proof hidden"></p>
       <div id="progress" class="progress hidden" aria-live="polite">
@@ -445,6 +454,19 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
           <button id="ppMake" class="btn" type="button">Make it with moving visuals</button>
           <a id="ppFound" class="btn ghost hidden" href="#founding">Keep them after launch</a>
         </div>
+      </div>
+    </div>
+    <div id="releaseCard" class="relcard">
+      <canvas id="rcCanvas" width="1080" height="1350" aria-label="Your release card, ready to post"></canvas>
+      <div>
+        <h3>Your release card</h3>
+        <p>Post this with your video. It has your cover, your album and how it was made, so people ask where you got it.</p>
+        <div class="btnrow">
+          <button id="rcDownload" class="btn" type="button">Download image</button>
+          <button id="rcCopy" class="btn ghost" type="button">Copy image</button>
+          <a id="rcX" class="btn ghost" href="#" target="_blank" rel="noopener">Post on X</a>
+        </div>
+        <p id="rcNote" class="note"></p>
       </div>
     </div>
     <div class="sharebox">
@@ -1247,6 +1269,101 @@ function composite(ctx, w, h, t, st, visCanvas, region, motion, frameNo, drawTex
   }
   ctx.restore();
 }
+/* ---------- end card + release card ---------- */
+const END_SECS = 4;
+let endVinyl = null;
+const easeOut = u => 1 - Math.pow(1 - Math.min(1, Math.max(0, u)), 3);
+function roundedClip(x, px, py, s, r){ x.beginPath(); x.roundRect(px, py, s, s, r); x.clip(); }
+function drawEndCard(ctx, w, h, t){
+  ctx.save();
+  ctx.drawImage(bgFor(w, h), 0, 0, w, h);
+  ctx.drawImage(bgCache.vignette, 0, 0);
+  const a1 = easeOut(t/0.9), a2 = easeOut((t-0.35)/0.9), a3 = easeOut((t-0.8)/0.9);
+  const cs = 500, cx0 = 180, cy0 = 290 + (1-a1)*30;
+  if (!endVinyl) endVinyl = vinylCanvas(480);
+  ctx.save(); ctx.globalAlpha = a1;
+  ctx.translate(cx0 + cs*0.45 + 240 + a1*0, cy0 + cs/2); ctx.rotate(t*0.9);
+  ctx.drawImage(endVinyl, -240, -240, 480, 480); ctx.restore();
+  ctx.save(); ctx.globalAlpha = a1;
+  ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 24;
+  ctx.fillStyle = "#000"; ctx.beginPath(); ctx.roundRect(cx0, cy0, cs, cs, 18); ctx.fill();
+  ctx.shadowColor = "transparent"; roundedClip(ctx, cx0, cy0, cs, 18);
+  ctx.drawImage(coverCanvas(cs), cx0, cy0, cs, cs); ctx.restore();
+  const tx = 980;
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.save(); ctx.globalAlpha = a2; ctx.translate((1-a2)*40, 0);
+  ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.font = `600 34px ${BODY}`;
+  ctx.fillText("MADE WITH", tx, 440);
+  const g = ctx.createLinearGradient(tx, 0, tx+700, 0); g.addColorStop(0, "#ffffff"); g.addColorStop(1, "#F5D90A");
+  ctx.fillStyle = g; ctx.font = `800 128px ${DISPLAY}`;
+  ctx.fillText("Releasely", tx, 565); ctx.fillText("Studio", tx, 690);
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha = a3; ctx.translate((1-a3)*40, 0);
+  ctx.fillStyle = "rgba(255,255,255,.82)"; ctx.font = `500 36px ${BODY}`;
+  ctx.fillText("Album to YouTube video. Free for artists.", tx, 760);
+  const url = SITE.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  ctx.font = `700 34px ${BODY}`; const tw = ctx.measureText(url).width;
+  ctx.fillStyle = "#F5D90A"; ctx.beginPath(); ctx.roundRect(tx, 800, tw + 56, 68, 34); ctx.fill();
+  ctx.fillStyle = "#141833"; ctx.fillText(url, tx + 28, 846);
+  ctx.restore();
+  ctx.restore();
+}
+function drawReleaseCard(c, info){
+  const w = c.width, h = c.height, x = c.getContext("2d");
+  x.save();
+  x.drawImage(bgFor(w, h), 0, 0, w, h);
+  x.drawImage(bgCache.vignette, 0, 0);
+  const cs = 700, cx0 = 130, cy0 = 150;
+  x.save(); x.translate(cx0 + cs - 20 + 150, cy0 + cs/2); x.rotate(0.5);
+  x.drawImage(vinylCanvas(640), -320, -320, 640, 640); x.restore();
+  x.save(); x.shadowColor = "rgba(0,0,0,.6)"; x.shadowBlur = 70; x.shadowOffsetY = 28;
+  x.fillStyle = "#000"; x.beginPath(); x.roundRect(cx0, cy0, cs, cs, 22); x.fill(); x.shadowColor = "transparent";
+  roundedClip(x, cx0, cy0, cs, 22); x.drawImage(coverCanvas(cs), cx0, cy0, cs, cs); x.restore();
+  // pill
+  x.textBaseline = "alphabetic"; x.textAlign = "left";
+  const label = "NEW ALBUM · OUT NOW"; x.font = `700 26px ${BODY}`;
+  const lw = x.measureText(label).width;
+  x.fillStyle = "#F5D90A"; x.beginPath(); x.roundRect(80, 70, lw + 44, 52, 26); x.fill();
+  x.fillStyle = "#141833"; x.fillText(label, 102, 106);
+  // titles
+  x.fillStyle = "#fff"; fitText(x, info.album, w - 160, 92, 800, DISPLAY, 44); x.fillText(info.album, 80, 1010);
+  x.fillStyle = "rgba(255,255,255,.78)"; fitText(x, info.artist, w - 160, 50, 600, BODY, 28);
+  if (info.artist) x.fillText(info.artist, 80, 1076);
+  x.fillStyle = "rgba(255,255,255,.6)"; x.font = `500 30px ${BODY}`;
+  x.fillText(`${info.songs} song${info.songs === 1 ? "" : "s"} · ${info.mins} min · full album video`, 80, 1132);
+  // footer
+  x.fillStyle = "rgba(255,255,255,.14)"; x.fillRect(80, 1186, w - 160, 2);
+  x.fillStyle = "#fff"; x.font = `700 32px ${BODY}`; x.fillText("Made with Releasely Studio", 80, 1250);
+  x.fillStyle = "#F5D90A"; x.font = `600 28px ${BODY}`; x.textAlign = "right";
+  x.fillText(SITE.replace(/^https?:\/\//, "").replace(/\/$/, ""), w - 80, 1250);
+  x.restore();
+}
+let rcInfo = null, rcLink = null;
+async function makeReleaseCard(plan, total){
+  const c = $("rcCanvas");
+  try { await document.fonts.ready; } catch {}
+  rcInfo = {album: $("album").value.trim() || "New Album", artist: $("artist").value.trim(), songs: plan.length, mins: Math.max(1, Math.round(total/SR/60))};
+  drawReleaseCard(c, rcInfo);
+  rcLink = SITE;
+  try {
+    const r = await fetch("/api/me", {credentials:"same-origin"});
+    const j = await r.json();
+    if (j && j.user && j.user.ref_code) rcLink = SITE + "?ref=" + encodeURIComponent(j.user.ref_code);
+  } catch {}
+  $("rcNote").textContent = rcLink === SITE ? "Log in to your account and your referral link goes in the post." : "The post text includes your referral link.";
+}
+$("rcDownload").onclick = () => $("rcCanvas").toBlob(b => b && saveFile(`${safeFile(rcInfo?.album || "Album")} (release card).png`, b), "image/png");
+$("rcCopy").onclick = async () => {
+  const b = await new Promise(r => $("rcCanvas").toBlob(r, "image/png"));
+  try { await navigator.clipboard.write([new ClipboardItem({"image/png": b})]); $("rcCopy").textContent = "Copied"; }
+  catch { $("rcCopy").textContent = "Use Download"; }
+  setTimeout(() => $("rcCopy").textContent = "Copy image", 1800);
+};
+$("rcX").onclick = () => {
+  const name = rcInfo?.album ? `"${rcInfo.album}"` : "my album";
+  $("rcX").href = "https://x.com/intent/post?text=" + encodeURIComponent(`${name} is out. Made the full-album video in minutes, free, with Releasely Studio ${rcLink || SITE}`);
+};
+
 const REGION_ALBUM = {x:20, y:60, s:960};
 const REGION_TEASER = {x:60, y:270, s:960};
 
@@ -1714,6 +1831,26 @@ async function renderVideo(){
         await new Promise(r => setTimeout(r, 0));
       }
     }
+    // end card: a few silent seconds after the last song with the closing screen
+    const endSec = $("endCard").checked ? END_SECS : 0;
+    endVinyl = null;
+    for (let s=0; s<endSec; s++){
+      if (cancelRequested) throw new Error("cancelled");
+      if (encErr) throw encErr;
+      const base = total/SR + s;
+      const ad = new AudioData({format:"f32-planar", sampleRate:SR, numberOfFrames:SR, numberOfChannels:2, timestamp: Math.round(base*1e6), data:new Float32Array(SR*2)});
+      aenc.encode(ad); ad.close();
+      const per = animated ? FR : 1;
+      for (let k=0;k<per;k++){
+        drawEndCard(ctx, W, H, s + k/per);
+        if (octx) octx.drawImage(canvas, 0, 0, OW, OH);
+        const vf = new VideoFrame(outCanvas, {timestamp: Math.round((base + k/per)*1e6), duration: Math.round(1e6/per)});
+        venc.encode(vf, {keyFrame: k === 0});
+        vf.close();
+        await waitQueue(venc, 5);
+      }
+      await waitQueue(aenc, 20);
+    }
     $("pText").textContent = "Finishing the file"; $("pEta").textContent = "";
     await venc.flush(); await aenc.flush();
     if (encErr) throw encErr;
@@ -1739,6 +1876,7 @@ async function renderVideo(){
     $("stampWarn").textContent = checkChapters(plan, total);
     $("result").classList.remove("hidden");
     showProPreview();
+    makeReleaseCard(plan, total);
     $("barFill").style.width = "100%";
     setMsg(`Done in ${fmtTime((performance.now()-t0wall)/1000)}. Download it below.`, "ok");
     countEvent("album");
