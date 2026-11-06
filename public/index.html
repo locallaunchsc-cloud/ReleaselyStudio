@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Releasely Studio · Album to YouTube video</title>
-<meta name="description" content="Free tool for independent artists: turn your album's MP3s into one full-album YouTube video with fades, matched volume and chapter timestamps, plus a TikTok teaser for every song.">
+<title>Releasely Studio · Get your album on YouTube today</title>
+<meta name="description" content="Finished the album? Get it on YouTube today. Free for independent artists: drop in your MP3s, get one ready-to-post YouTube video with fades and chapter timestamps, plus a TikTok teaser for every song. No editing software.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#2B45D6">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Releasely Studio">
-<meta property="og:title" content="Releasely Studio: your album, ready for YouTube and TikTok">
-<meta property="og:description" content="Free for independent artists. MP3s in, full-album YouTube video + a TikTok teaser for every song out. Runs in your browser.">
+<meta property="og:title" content="Finished the album? Get it on YouTube today.">
+<meta property="og:description" content="Free for independent artists. MP3s in, ready-to-post YouTube video out, plus a TikTok teaser for every song. No editing software.">
 <meta property="og:url" content="https://releaselystudio.releasely.workers.dev/">
 <meta property="og:image" content="https://releaselystudio.releasely.workers.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Releasely Studio: your album, ready for YouTube and TikTok">
-<meta name="twitter:description" content="Free for independent artists. MP3s in, full-album YouTube video + a TikTok teaser for every song out.">
+<meta name="twitter:title" content="Finished the album? Get it on YouTube today.">
+<meta name="twitter:description" content="Free for independent artists. MP3s in, ready-to-post YouTube video out, plus a TikTok teaser for every song.">
 <meta name="twitter:image" content="https://releaselystudio.releasely.workers.dev/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -290,10 +290,10 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
   </nav>
   <header class="hero">
     <div class="hero-copy">
-      <h1>Your album, ready for YouTube and TikTok.</h1>
-      <p class="lede">Drop in your MP3s and get one full-album video with smooth fades, matched volume and chapter timestamps, plus a teaser clip for every song. Free for independent artists.</p>
+      <h1>Finished the album? Get it on YouTube today.</h1>
+      <p class="lede">Stop letting your album sit on your hard drive. Drop in your MP3s and get one ready-to-post YouTube video with smooth fades and chapter timestamps, plus a TikTok teaser for every song. No editing software. Free for independent artists.</p>
       <div class="hero-cta">
-        <button id="heroDrop" class="btn primary" type="button">Choose your songs</button>
+        <button id="heroDrop" class="btn primary" type="button">Make my album video</button>
         <span class="privacy">Your songs never leave your computer</span>
       </div>
       <p id="stats" class="stats hidden"></p>
@@ -470,12 +470,14 @@ footer.foot{margin-top:40px;color:var(--faint);font-size:.85rem;display:flex;jus
       </div>
     </div>
     <div class="sharebox">
-      <h3>Send this to your producer or features</h3>
-      <p>They're dropping music too. Releasely is free for them.</p>
+      <h3>Know another artist stuck on release day?</h3>
+      <p id="shText">Send them your link. When they subscribe, you earn <b>20% of what they pay, on every renewal.</b></p>
+      <div class="btnrow" style="margin-bottom:8px"><input id="shLink" type="text" readonly aria-label="Your referral link" style="flex:1;min-width:200px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:inherit;font:inherit"></div>
       <div class="btnrow">
         <button id="shCopy" class="btn ghost small" type="button">Copy link</button>
         <button id="shNative" class="btn ghost small hidden" type="button">Share…</button>
         <a id="shX" class="btn ghost small" href="#" target="_blank" rel="noopener">Post on X</a>
+        <a id="shAcct" class="btn small hidden" href="/account.html">Create account to earn 20%</a>
       </div>
     </div>
   </section>
@@ -1351,6 +1353,7 @@ async function makeReleaseCard(plan, total){
     if (j && j.user && j.user.ref_code) rcLink = SITE + "?ref=" + encodeURIComponent(j.user.ref_code);
   } catch {}
   $("rcNote").textContent = rcLink === SITE ? "Log in to your account and your referral link goes in the post." : "The post text includes your referral link.";
+  if (window.refreshShare) window.refreshShare();
 }
 $("rcDownload").onclick = () => $("rcCanvas").toBlob(b => b && saveFile(`${safeFile(rcInfo?.album || "Album")} (release card).png`, b), "image/png");
 $("rcCopy").onclick = async () => {
@@ -2276,16 +2279,26 @@ function demoCover(size){
   }
 })();
 
-/* ---------- share after export ---------- */
+/* ---------- share after export (referral link when logged in) ---------- */
 (function setupShare(){
   const albumName = () => $("album").value.trim();
-  const text = () => (albumName() ? `Just made the full album video for "${albumName()}" with Releasely Studio. ` : "Just made my full album video with Releasely Studio. ") + "Free for independent artists:";
+  const link = () => rcLink || SITE;
+  const text = () => (albumName() ? `Just made the full album video for "${albumName()}" with Releasely Studio. ` : "Just made my full album video with Releasely Studio. ") + "If your music is sitting on a hard drive, try it:";
+  const refresh = () => {
+    $("shLink").value = link();
+    $("shAcct").classList.toggle("hidden", link() !== SITE);
+    if (link() === SITE) $("shText").innerHTML = "Send them this link. <b>Create a free account and your link earns you 20% of what they pay, on every renewal.</b>";
+  };
+  refresh();
+  $("shLink").addEventListener("focus", () => { refresh(); $("shLink").select(); });
   $("shCopy").onclick = async () => {
-    try { await navigator.clipboard.writeText(SITE); } catch {}
+    refresh();
+    try { await navigator.clipboard.writeText(link()); } catch {}
     $("shCopy").textContent = "Copied"; setTimeout(() => $("shCopy").textContent = "Copy link", 1500);
   };
-  if (navigator.share){ $("shNative").classList.remove("hidden"); $("shNative").onclick = () => navigator.share({title:"Releasely Studio", text:text(), url:SITE}).catch(()=>{}); }
-  $("shX").onclick = () => { $("shX").href = "https://x.com/intent/post?text=" + encodeURIComponent(text() + " " + SITE); };
+  if (navigator.share){ $("shNative").classList.remove("hidden"); $("shNative").onclick = () => navigator.share({title:"Releasely Studio", text:text(), url:link()}).catch(()=>{}); }
+  $("shX").onclick = () => { $("shX").href = "https://x.com/intent/post?text=" + encodeURIComponent(text() + " " + link()); };
+  window.refreshShare = refresh; // called by makeReleaseCard once the referral link is known
 })();
 
 /* ---------- release date (kept only in this browser) ---------- */
